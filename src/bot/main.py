@@ -3,27 +3,46 @@ import asyncio
 from aiogram import Bot, Dispatcher
 
 from src.core.config import get_settings
-from src.services.database.crud import create_tables
+from src.services.database.models import Database
+
+from src.bot.handlers.start import StartHandlers
+from src.bot.handlers.settings import SettingsHandlers
+from src.bot.handlers.news import NewsHandler
+
 from src.services.llm.service import LLMService
 from src.services.news.service import NewsService
 
-settings = get_settings()
 
-async def main():
-    create_tables()
-    bot = Bot(token=settings.BOT_TOKEN)
-    dp = Dispatcher()
+class BotApplication:
+    def  __init__(self):
+        self.settings = get_settings()
+        self.db = Database()
+        self.bot = Bot(token=self.settings.BOT_TOKEN)
+        self.dp = Dispatcher()
 
-    # Инициализируем сервисы
-    news_service = NewsService()
-    llm_service = LLMService()
+        # Сервисы
+        self.news_service = NewsService()
+        self.llm_service = LLMService()
 
-    # Подключаем handler через класс
-    news_handler = NewsHandler(news_service, llm_service)
-    dp.include_router(news_handler.router)
+        # Хендлеры
+        self.start_handlers = StartHandlers()
+        self.settings_handlers = SettingsHandlers()
+        self.news_handlers = NewsHandler(self.news_service, self.llm_service)
 
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
+    def setup(self):
+        self.db.create_tables()
+
+        self.dp.include_router(self.start_handler.router)
+        self.dp.include_router(self.settings_handler.router)
+        self.dp.include_router(self.news_handler.router)
+
+    async def run(self):
+        self.setup()
+        print("Bot started...")
+
+        await self.bot.delete_webhook(drop_pending_updates=True)
+        await self.dp.start_polling(self.bot)
 
 if __name__ == "__main__":
-    asyncio.run()
+    app = BotApplication()
+    asyncio.run(app.run())
