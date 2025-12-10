@@ -18,7 +18,7 @@ class Database:
         self.conn.commit()
 
     def _create_users(self):
-        self.curexecute("""
+        self.cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 telegram_id INTEGER PRIMARY KEY,
                 name TEXT,

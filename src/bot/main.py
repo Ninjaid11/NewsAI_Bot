@@ -32,9 +32,9 @@ class BotApplication:
     def setup(self):
         self.db.create_tables()
 
-        self.dp.include_router(self.start_handler.router)
-        self.dp.include_router(self.settings_handler.router)
-        self.dp.include_router(self.news_handler.router)
+        self.dp.include_router(self.start_handlers.router)
+        self.dp.include_router(self.settings_handlers.router)
+        self.dp.include_router(self.news_handlers.router)
 
     async def run(self):
         self.setup()
