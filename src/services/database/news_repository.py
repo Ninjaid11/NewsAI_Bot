@@ -19,7 +19,7 @@ class NewsRepository:
 
     def _close(self):
         if self.conn:
-            self.conn.commite()
+            self.conn.commit()
             self.conn.close()
             self.conn = None
             self.cur = None
@@ -33,7 +33,10 @@ class NewsRepository:
         guid = self._compute_guid(title, url, source)
         self._connect()
         try:
-            self.cur.execute("SELECT 1 FROM news WHERE source_url || title || source = ?", (guid,))
+            self.cur.execute("""
+                SELECT 1 FROM news
+                WHERE title = ? AND source = ? AND source_url = ?
+            """, (title, source, url))
             res = self.cur.fetchone()
         except sqlite3.OperationalError:
             self.cur.execute("SELECT 1 FROM news WHERE title = ? AND source = ?", (title, source))
@@ -74,7 +77,7 @@ class NewsRepository:
             ORDER BY id DESC
             LIMIT ?
         """, (limit,))
-        rows = self.cur.fetchone()
+        rows = self.cur.fetchall()
         self._close()
 
         result = []

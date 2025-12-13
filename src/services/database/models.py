@@ -1,5 +1,4 @@
 import sqlite3
-from dataclasses import dataclass
 
 DB_NAME = "news_ai.db"
 

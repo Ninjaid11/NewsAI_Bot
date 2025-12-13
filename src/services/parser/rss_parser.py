@@ -1,5 +1,3 @@
-from itertools import count
-
 import feedparser
 from datetime import datetime
 from src.services.database.news_repository import NewsRepository
@@ -30,20 +28,20 @@ class RSSParser:
             content = item.get("summary") or item.get("description")
             date = item.get("published", datetime.now().isoformat())
 
-            if self.db.exists(title=title, url=link, source=url):
+            if self.db.exists(title, link, url):
                 continue
 
             summary = await self.llm.summarize(content)
 
-            self.db.save(
-                title=title,
-                content=content,
-                summary=summary,
-                image=None,
-                source=url,
-                date=date,
-                url=link
-            )
+            self.db.save({
+                "title": title,
+                "content": content,
+                "summary": summary,
+                "image_url": None,
+                "source": url,
+                "source_url": link,
+                "published_at": date,
+            })
             count += 1
 
         return count
