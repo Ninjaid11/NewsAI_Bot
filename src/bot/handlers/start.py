@@ -2,27 +2,35 @@ from aiogram import Router
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import CommandStart
 
-class StartHandlers:
-    def __init__(self):
-        self.router = Router()
-        self.register_handlers()
+from src.services.database.user_repository import UserRepository
 
-    def register_handlers(self):
+class StartHandlers:
+    """
+    Обработчик команды /start.
+    Отвечает за приветствие пользователя и первичное взаимодействие с ботом.
+    """
+    def __init__(self, user_repo: UserRepository):
+        self.router = Router()
+        self.user_repo = user_repo
+        self.register()
+
+    def register(self):
         self.router.message.register(self.start, CommandStart())
 
     async def start(self, message: Message):
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(text="News")],
-                [KeyboardButton(text="Settings")],
-            ],
-            resize_keyboard=True
+        self.user_repo.add_or_update(
+            telegram_id=message.from_user.id,
+            name=message.from_user.full_name
         )
 
         await message.answer(
-            "👋 Привет! Я твой умный помощник.\n\n"
-            "🔹 Новости\n"
-            "🔹 Настройки аккаунта\n\n"
-            "Что хочешь сделать?",
-            reply_markup=keyboard
+            "👋 Привет!\nЯ бот с умными новостями 🧠📰\n\n"
+            "Выбери действие:",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="📰 Новости")],
+                    [KeyboardButton(text="⚙ Настройки")]
+                ],
+                resize_keyboard=True
+            )
         )

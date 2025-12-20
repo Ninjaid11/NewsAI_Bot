@@ -6,6 +6,10 @@ def get_connection():
     return sqlite3.connect(DB_NAME)
 
 class Database:
+    """
+    Класс инициализации базы данных.
+    Создаёт таблицы и отвечает за структуру базы данных приложения.
+    """
     def __init__(self):
         self.conn = get_connection()
         self.cur = self.conn.cursor()

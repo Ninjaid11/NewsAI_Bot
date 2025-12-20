@@ -5,6 +5,11 @@ from src.services.llm.service import LLMService
 
 
 class RSSParser:
+    """
+    Парсер RSS-лент новостей.
+    Загружает новости из указанных источников, проверяет их на дубликаты
+    и сохраняет новые записи в базу данных.
+    """
     def __init__(self, rss_list: list[str], llm: LLMService, db: NewsRepository):
         self.rss_list = rss_list
         self.llm = llm
