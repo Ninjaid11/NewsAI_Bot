@@ -1,8 +1,12 @@
+from idlelib.window import add_windows_to_menu
+
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import CommandStart, Command
+from aiohttp.web_routedef import delete
 
 from src.services.database.user_repository import UserRepository
+from src.bot.keyboards.main import main_menu
 
 class SettingsHandlers:
     """
@@ -17,6 +21,7 @@ class SettingsHandlers:
     def register(self):
         self.router.message.register(self.menu, F.text == "⚙ Настройки")
         self.router.message.register(self.set_limit, F.text.in_(["3 новости", "5 новостей"]))
+        self.router.message.register(self.back, F.text.in_(["⬅ Назад"]))
 
     async def menu(self, message: Message):
         settings = self.user_repo.get_settings(message.from_user.id)
@@ -50,3 +55,11 @@ class SettingsHandlers:
                     resize_keyboard=True
                 )
             )
+
+    async def back(self, message: Message):
+        await message.delete()
+
+        await message.answer(
+            "🏠 Главное меню",
+            reply_markup=main_menu()
+        )
