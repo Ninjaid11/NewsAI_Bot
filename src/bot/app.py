@@ -54,7 +54,7 @@ class BotApplication:
     def setup_handlers(self):
         start = StartHandlers(self.user_repo)
         settings = SettingsHandlers(self.user_repo)
-        news = NewsHandler(self.news_repo, self.user_repo)
+        news = NewsHandler(self.user_repo, self.news_repo, self.sent_repo)
         subscribe = SubscribeHandler(self.user_repo)
 
         self.dp.include_router(start.router)
@@ -63,7 +63,7 @@ class BotApplication:
         self.dp.include_router(subscribe.router)
 
     def setup_tasks(self):
-        self.scheduler.add_job(self.news_mailer.sent_new_news, "interval", hours=1)
+        self.scheduler.add_job(self.news_mailer.send_new_news, "interval", hours=1)
         self.scheduler.start()
 
     async def run(self):
@@ -72,7 +72,7 @@ class BotApplication:
         self.setup_tasks()
 
         await self.rss_parser.fetch_all()
-        await self.news_mailer.sent_new_news()
+        await self.news_mailer.send_new_news()
 
         print("Parser + scheduler started")
         print("Bot started...")

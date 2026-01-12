@@ -25,8 +25,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS users (
                 telegram_id INTEGER PRIMARY KEY,
                 name TEXT,
-                settings TEXT,
-                subscribed BOOLEAN DEFAULT 1
+                settings TEXT
             )
         """)
 

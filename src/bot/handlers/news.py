@@ -1,40 +1,42 @@
 from aiogram import Router, F
-from aiogram.types import Message
-from aiogram.filters import Command
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
-from src.services.database.news_repository import NewsRepository
 from src.services.database.user_repository import UserRepository
-
+from src.services.database.news_repository import NewsRepository
+from src.services.database.sent_news_repository import SentNewsRepository
 
 class NewsHandler:
     """
-    Обработчик команд, связанных с новостями.
-    Позволяет пользователю получать последние новости из базы данных
-    через Telegram-бота.
+    Кнопка "Новости" — выдаёт одну новость, которую пользователь ещё не видел.
     """
-    def __init__(self, repo: NewsRepository, user_repo: UserRepository):
+    def __init__(self, user_repo: UserRepository, news_repo: NewsRepository, sent_repo: SentNewsRepository):
         self.router = Router()
-        self.register()
-        self.repo = repo
         self.user_repo = user_repo
+        self.news_repo = news_repo
+        self.sent_repo = sent_repo
+        self.register()
 
     def register(self):
         self.router.message.register(self.news, F.text == "📰 Новости")
 
     async def news(self, message: Message):
-        settings = self.user_repo.get_settings(message.from_user.id)
-        limit = settings.get("news_limit", 5)
+        user_id = message.from_user.id
 
-        news_list = self.repo.get_latest(limit)
+        # Берём последние 20 новостей
+        news_list = self.news_repo.get_latest(20)
 
-        if not news_list:
-            await message.answer("📰 Пока новостей нет")
-            return
-
+        # Ищем первую непрочитанную
         for item in news_list:
-            text = (
-                f"📰 <b>{item['title']}</b>\n"
-                f"🔗 {item['source_url']}"
-            )
+            if not self.sent_repo.was_sent(user_id, item["id"]):
+                text = (
+                    f"📰 <b>{item['title']}</b>\n"
+                    
+                    f"🔗 {item['source_url']}"
+                )
+                await message.answer(text, parse_mode="HTML")
 
-            await message.answer(text, parse_mode="HTML")
+                # Помечаем как отправленную
+                self.sent_repo.mark_sent(user_id, item["id"])
+                break
+        else:
+            await message.answer("✅ Новостей больше нет. Подождите, пока появятся новые!")
