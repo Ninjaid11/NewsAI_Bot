@@ -74,7 +74,6 @@ class BotApplication:
         await self.rss_parser.fetch_all()
         await self.news_mailer.send_new_news()
 
-        print("Parser + scheduler started")
         print("Bot started...")
 
         await self.bot.delete_webhook(drop_pending_updates=True)

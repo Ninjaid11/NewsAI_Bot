@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from aiogram import Router, F
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from src.services.database.user_repository import UserRepository
 from src.services.database.news_repository import NewsRepository
@@ -21,22 +23,40 @@ class NewsHandler:
 
     async def news(self, message: Message):
         user_id = message.from_user.id
-
-        # Берём последние 20 новостей
         news_list = self.news_repo.get_latest(20)
 
-        # Ищем первую непрочитанную
         for item in news_list:
-            if not self.sent_repo.was_sent(user_id, item["id"]):
-                text = (
-                    f"📰 <b>{item['title']}</b>\n"
-                    
-                    f"🔗 {item['source_url']}"
-                )
-                await message.answer(text, parse_mode="HTML")
+            if self.sent_repo.was_sent(user_id, item["id"]):
+                continue
 
-                # Помечаем как отправленную
-                self.sent_repo.mark_sent(user_id, item["id"])
-                break
-        else:
-            await message.answer("✅ Новостей больше нет. Подождите, пока появятся новые!")
+            published_at = item.get("published_at", "")
+            if published_at:
+                dt = datetime.fromisoformat(published_at)
+                published_at = dt.strftime("%d %B %Y, %H:%M")
+
+            text = f"📰 <b>{item.get("title")}</b>\n🕒 {published_at}\n\n" \
+                   f"<i>{item.get("summary")}</i>"
+
+            url = item.get("source_url")
+            keyboard = None
+            if url and url.startswith("http"):
+                keyboard = InlineKeyboardMarkup(
+                    inline_keyboard=[[InlineKeyboardButton(text="Перейти к статье", url=url)]]
+                )
+
+            image_url = item.get("image_url")
+            if not image_url:
+                image_url = "https://via.placeholder.com/500x300.png?text=News"
+
+            await message.answer_photo(
+                photo=image_url,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=keyboard
+            )
+
+            self.sent_repo.mark_sent(user_id, item["id"])
+
+            return
+
+        await message.answer("✅ Новых новостей пока нет")
