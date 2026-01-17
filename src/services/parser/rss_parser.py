@@ -1,8 +1,8 @@
 import feedparser
-from datetime import datetime
+from email.utils import parsedate_to_datetime
+
 from src.services.database.news_repository import NewsRepository
 from src.services.llm.service import LLMService
-
 
 class RSSParser:
     """
@@ -14,6 +14,7 @@ class RSSParser:
         self.rss_list = rss_list
         self.llm = llm
         self.db = db
+        self.FALLBACK_IMAGE = "static/fallback.jpg"
 
     async def fetch_all(self):
         """Парсит все RSS-каналы"""
@@ -29,9 +30,11 @@ class RSSParser:
 
         for item in feed.entries:
             title = item.title
+            date = parsedate_to_datetime(item.get("published"))
+            image_url = self._extract_image(item)
+            content = item.get("description")
             link = item.get("link")
-            content = item.get("summary") or item.get("description")
-            date = item.get("published", datetime.now().isoformat())
+
 
             if self.db.exists(title, link, url):
                 continue
@@ -42,7 +45,7 @@ class RSSParser:
                 "title": title,
                 "content": content,
                 "summary": summary,
-                "image_url": None,
+                "image_url": image_url,
                 "source": url,
                 "source_url": link,
                 "published_at": date,
@@ -50,3 +53,10 @@ class RSSParser:
             count += 1
 
         return count
+
+    def _extract_image(self, item) -> str | None:
+        if "media_thumbnail" in item:
+            thumbs = item.media_thumbnail
+            if thumbs and "url" in thumbs[0]:
+                return thumbs[0]["url"]
+        return self.FALLBACK_IMAGE
