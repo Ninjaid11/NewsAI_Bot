@@ -23,7 +23,6 @@ class SentNewsRepository:
         return bool(res)
 
     def mark_sent(self, user_id: int, news_id: int):
-        # вызывается ПОСЛЕ успешной отправки сообщения
         conn = get_connection()
         cur = conn.cursor()
 

@@ -12,7 +12,6 @@ from src.services.database.sent_news_repository import SentNewsRepository
 from src.bot.handlers.start import StartHandlers
 from src.bot.handlers.settings import SettingsHandlers
 from src.bot.handlers.news import NewsHandler
-from src.bot.handlers.subscribe import SubscribeHandler
 
 from src.services.llm.service import LLMService
 from src.services.news.mailer import NewsMailer
@@ -55,12 +54,10 @@ class BotApplication:
         start = StartHandlers(self.user_repo)
         settings = SettingsHandlers(self.user_repo)
         news = NewsHandler(self.user_repo, self.news_repo, self.sent_repo)
-        subscribe = SubscribeHandler(self.user_repo)
 
         self.dp.include_router(start.router)
         self.dp.include_router(settings.router)
         self.dp.include_router(news.router)
-        self.dp.include_router(subscribe.router)
 
     def setup_tasks(self):
         self.scheduler.add_job(self.news_mailer.send_new_news, "interval", hours=1)

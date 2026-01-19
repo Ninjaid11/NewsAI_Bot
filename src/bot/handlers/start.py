@@ -18,7 +18,7 @@ class StartHandlers:
         self.router.message.register(self.start, CommandStart())
 
     async def start(self, message: Message):
-        self.user_repo.add_or_update(
+        self.user_repo.ensure_user(
             telegram_id=message.from_user.id,
             name=message.from_user.full_name
         )
