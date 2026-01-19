@@ -11,6 +11,9 @@ class NewsHandler:
     """
     Кнопка "Новости" — выдаёт одну новость, которую пользователь ещё не видел.
     """
+
+    FALLBACK_IMAGE = "static/fallback.jpg"
+
     def __init__(self, user_repo: UserRepository, news_repo: NewsRepository, sent_repo: SentNewsRepository):
         self.router = Router()
         self.user_repo = user_repo
@@ -46,7 +49,7 @@ class NewsHandler:
 
             image_url = item.get("image_url")
             if not image_url:
-                image_url = "https://via.placeholder.com/500x300.png?text=News"
+                image_url = self.FALLBACK_IMAGE
 
             await message.answer_photo(
                 photo=image_url,
