@@ -4,9 +4,10 @@ from typing import List
 
 class Settings(BaseSettings):
     BOT_TOKEN: str
+    API_KEY: str
     RSS_SOURCES: List[str] = [
-        "https://lenta.ru/rss",
-        "https://news.google.com/rss",
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://feeds.bbci.co.uk/news/world/rss.xml",
     ]
 
     model_config = SettingsConfigDict(env_file=".env")
