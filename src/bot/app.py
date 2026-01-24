@@ -13,7 +13,7 @@ from src.bot.handlers.start import StartHandlers
 from src.bot.handlers.settings import SettingsHandlers
 from src.bot.handlers.news import NewsHandler
 
-from src.services.llm.service import LLMService
+from src.services.llm.llm_service import LLMService
 from src.services.news.mailer import NewsMailer
 from src.services.parser.rss_parser import RSSParser
 
@@ -45,7 +45,7 @@ class BotApplication:
         self.rss_parser = RSSParser(
             rss_list=self.settings.RSS_SOURCES,
             llm=self.llm_service,
-            db=self.news_repo,
+            news_repo=self.news_repo,
         )
 
         self.scheduler = AsyncIOScheduler()

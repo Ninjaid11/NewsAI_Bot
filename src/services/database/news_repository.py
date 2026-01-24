@@ -49,7 +49,6 @@ class NewsRepository:
 
         title = item.get("title")
         content = item.get("content")
-        summary = item.get("summary")
         image_url = item.get("image_url")
         source = item.get("source")
         source_url = item.get("source_url")
@@ -58,9 +57,9 @@ class NewsRepository:
 
         try:
             self.cur.execute("""
-                INSERT INTO news (title, content, summary, image_url, source, source_url, published_at, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (title, content, summary, image_url, source, source_url, published_at, created_at))
+                INSERT INTO news (title, content, image_url, source, source_url, published_at, created_at, summary_en, summary_ru)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (title, content, image_url, source, source_url, published_at, created_at, "", ""))
             news_id = self.cur.lastrowid
         except Exception as e:
             print("Error saving news:", e)
@@ -72,7 +71,7 @@ class NewsRepository:
     def get_latest(self, limit: int = 5) -> List[Dict]:
         self._connect()
         self.cur.execute("""
-            SELECT id, title, content, summary, image_url, source, source_url, published_at, created_at
+            SELECT id, title, content, summary_en, summary_ru, image_url, source, source_url, published_at, created_at
             FROM news
             ORDER BY id DESC
             LIMIT ?
@@ -86,11 +85,21 @@ class NewsRepository:
                 "id": r[0],
                 "title": r[1],
                 "content": r[2],
-                "summary": r[3],
-                "image_url": r[4],
-                "source": r[5],
-                "source_url": r[6],
-                "published_at": r[7],
-                "created_at": r[8]
+                "summary_en": r[3],
+                "summary_ru": r[4],
+                "image_url": r[5],
+                "source": r[6],
+                "source_url": r[7],
+                "published_at": r[8],
+                "created_at": r[9]
             })
         return result
+
+    def save_summary(self, news_id: int, summary_en: str, summary_ru: str):
+        self._connect()
+        self.cur.execute("""
+            UPDATE news
+            SET summary_en = ?, summary_ru = ?
+            WHERE id = ?
+        """, (summary_en, summary_ru, news_id))
+        self._close()

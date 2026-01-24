@@ -30,6 +30,8 @@ class NewsMailer:
         subscribed_users = self.users.get_subscribed_users()
 
         for user_id in subscribed_users:
+            lang = self.users.get_setting(user_id, "lang", "en")
+
             news_list = self.news.get_latest(20)
 
             for item in news_list:
@@ -44,11 +46,22 @@ class NewsMailer:
                     except Exception:
                         pass
 
-                text = f"📰 <b>{item.get('title')}</b>\n🕒 {published_at}\n\n" \
-                       f"<i>{item.get('summary')}</i>"
+                title = item.get("title", "")
+                summary = item.get("summary", "")
 
-                url = item.get("source_url")
+                if lang == "ru":
+                    summary = f"[RU] {summary}"
+                else:
+                    summary = f"[EN] {summary}"
+
+                text = (
+                    f"📰 <b>{title}</b>\n"
+                    f"🕒 {published_at}\n\n"
+                    f"<i>{summary}</i>"
+                )
+
                 keyboard = None
+                url = item.get("source_url")
                 if url and url.startswith("http"):
                     keyboard = InlineKeyboardMarkup(
                         inline_keyboard=[[InlineKeyboardButton(text="Перейти к статье", url=url)]]
