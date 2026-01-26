@@ -9,6 +9,11 @@ class NewsSummarizer:
         self.llm = llm
 
     def summarize(self, *, title, content, published_at, lang: str) -> str:
+        """
+        Создает summary для одной новости на нужном языке
+
+        return: Возвращает строку с кратким пересказом новости.
+        """
         system, user_template = summary_prompt(lang)
 
         user_prompt = user_template.format(

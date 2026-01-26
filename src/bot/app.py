@@ -44,7 +44,6 @@ class BotApplication:
         # parser
         self.rss_parser = RSSParser(
             rss_list=self.settings.RSS_SOURCES,
-            llm=self.llm_service,
             news_repo=self.news_repo,
         )
 

@@ -23,29 +23,40 @@ class NewsProcessor:
             except Exception:
                 pass
 
+        title = news_item["title"]
+        content = news_item["content"]
         image_url = news_item.get("image_url") or self.FALLBACK_IMAGE
-        title = news_item.get("title", "")
-        content = news_item.get("content", "")
 
-        news_id = self.news_repo.save({
-            "title": title,
-            "content": content,
-            "image_url": image_url,
-            "source": news_item.get("source"),
-            "source_url": news_item.get("source_url"),
-            "published_at": published_at
-        })
+        summary_en = news_item.get("summary_en")
+        summary_ru = news_item.get("summary_ru")
 
-        summary_en = self.summarizer.summarize(title=title, content=content, published_at=published_at, lang="en")
-        summary_ru = self.summarizer.summarize(title=title, content=content, published_at=published_at, lang="ru")
+        if lang == "ru":
+            if not summary_ru:
+                summary_ru = self.summarizer.summarize(
+                    title=title,
+                    content=content,
+                    published_at=published_at,
+                    lang="ru"
+                )
+        else:
+            if not summary_en:
+                summary_en = self.summarizer.summarize(
+                    title=title,
+                    content=content,
+                    published_at=published_at,
+                    lang="en"
+                )
 
-        # сохраняем summary в БД
-        self.news_repo.save_summary(news_id, summary_en, summary_ru)
+        self.news_repo.save_summary(
+            news_item["id"],
+            summary_en or "",
+            summary_ru or ""
+        )
 
         summary = summary_ru if lang == "ru" else summary_en
 
         return {
-            "id": news_id,
+            "id": news_item["id"],
             "title": title,
             "published_at": published_at,
             "summary": summary,
