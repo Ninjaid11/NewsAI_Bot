@@ -103,3 +103,25 @@ class NewsRepository:
             WHERE id = ?
         """, (summary_en, summary_ru, news_id))
         self._close()
+
+    def get_without_summary(self, limit: int = 10):
+        self._connect()
+        self.cur.execute("""
+            SELECT id, title, content, published_at
+            FROM news
+            WHERE summary_en = '' OR summary_en IS NULL
+            ORDER BY id ASC
+            LIMIT ?
+        """, (limit,))
+        rows = self.cur.fetchall()
+        self._close()
+
+        return [
+            {
+                "id": r[0],
+                "title": r[1],
+                "content": r[2],
+                "published_at": r[3],
+            }
+            for r in rows
+        ]
