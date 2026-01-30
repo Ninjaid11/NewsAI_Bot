@@ -1,0 +1,1 @@
+GENERATING_NEWS = set()
