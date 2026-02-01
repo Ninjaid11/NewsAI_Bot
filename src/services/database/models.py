@@ -33,7 +33,8 @@ class Database:
         self.cur.execute("""
             CREATE TABLE IF NOT EXISTS news (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT,
+                title_en TEXT,
+                title_ru TEXT,
                 content TEXT,
                 summary_en TEXT DEFAULT '',
                 summary_ru TEXT DEFAULT '',
