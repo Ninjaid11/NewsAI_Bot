@@ -7,16 +7,17 @@ def summary_prompt(lang: str) -> tuple[str, str]:
 
     if lang == "ru":
         system = (
-            "You're a news service assistant."
-            "Write a brief, neutral description of the news item"
-            "in Russian in 2-3 sentences."
-            "Without emotions, judgments, or emojis."
+            "You are a news service assistant. "
+            "Write a brief, neutral description of the news item "
+            "in Russian in 2–3 sentences. "
+            "No emotions, judgments, or emojis."
         )
     else:
         system = (
-            "You are a news assistant. "
-            "Summarize the news in 2–3 short neutral sentences. "
-            "No opinions, no emojis."
+            "You are a news service assistant. "
+            "Write a brief, neutral summary of the news item "
+            "in 2–3 sentences. "
+            "No emotions, judgments, or emojis."
         )
 
     user = (
