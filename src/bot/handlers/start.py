@@ -1,8 +1,10 @@
 from aiogram import Router
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message
 from aiogram.filters import CommandStart
 
 from src.services.database.user_repository import UserRepository
+
+from src.bot.keyboards.main import main_menu
 
 class StartHandlers:
     """
@@ -26,11 +28,5 @@ class StartHandlers:
         await message.answer(
             "👋 Привет!\nЯ бот с умными новостями 🧠📰\n\n"
             "Выбери действие:",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard=[
-                    [KeyboardButton(text="📰 Новости")],
-                    [KeyboardButton(text="⚙ Настройки")]
-                ],
-                resize_keyboard=True
-            )
+            reply_markup=main_menu()
         )

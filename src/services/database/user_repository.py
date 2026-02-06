@@ -1,10 +1,14 @@
 import json
-from datetime import datetime
 from src.services.database.models import get_connection
 from src.core.log_config import Logger
 
 logger = Logger().get_logger()
 
+DEFAULT_SETTINGS = {
+    "subscribed": True,
+    "send_times": ["morning"],
+    "lang": "en"
+}
 
 class UserRepository:
     """
@@ -30,14 +34,9 @@ class UserRepository:
             exists = cur.fetchone()
 
             if not exists:
-                default_settings = {
-                    "subscribed": True,
-                    "news_interval": 1,
-                    "lang": "en"
-                }
                 cur.execute(
                     "INSERT INTO users (telegram_id, name, settings) VALUES (?, ?, ?)",
-                    (telegram_id, name, json.dumps(default_settings))
+                    (telegram_id, name, json.dumps(DEFAULT_SETTINGS))
                 )
                 conn.commit()
         except Exception as e:
@@ -47,7 +46,6 @@ class UserRepository:
                 conn.close()
 
     def unsubscribe(self, telegram_id: int):
-        """Отключить рассылку для пользователя"""
         try:
             settings = self.get_settings(telegram_id)
             settings["subscribed"] = False
@@ -56,7 +54,6 @@ class UserRepository:
             logger.error(f"Ошибка при отключении рассылки для telegram_id={telegram_id}: {e}")
 
     def subscribe(self, telegram_id: int):
-        """Включить рассылку для пользователя"""
         try:
             settings = self.get_settings(telegram_id)
             settings["subscribed"] = True
@@ -65,7 +62,6 @@ class UserRepository:
             logger.error(f"Ошибка при включении рассылки для telegram_id={telegram_id}: {e}")
 
     def get_subscribed_users(self) -> list[int]:
-        """Получить список ID пользователей с активной подпиской"""
         conn = None
         subscribed = []
         try:
@@ -89,47 +85,33 @@ class UserRepository:
         return subscribed
 
     def get_settings(self, telegram_id: int) -> dict:
-        """
-        Возвращает настройки пользователя в виде dict.
-        """
         conn = None
-        default_settings = {
-            "subscribed": True,
-            "news_interval": 1,
-            "lang": "en"
-        }
-
         try:
             conn = get_connection()
             cur = conn.cursor()
             cur.execute("SELECT settings FROM users WHERE telegram_id = ?", (telegram_id,))
             row = cur.fetchone()
 
-            if not row or not row[0]:
-                return default_settings.copy()
+            settings = {}
+            if row and row[0]:
+                try:
+                    settings = json.loads(row[0])
+                except json.JSONDecodeError:
+                    logger.warning(f"Неверный JSON в настройках telegram_id={telegram_id}")
 
-            try:
-                settings = json.loads(row[0])
-            except json.JSONDecodeError:
-                logger.warning(f"Неверный JSON в настройках telegram_id={telegram_id}")
-                return default_settings.copy()
-
-            for key, value in default_settings.items():
+            for key, value in DEFAULT_SETTINGS.items():
                 settings.setdefault(key, value)
 
             return settings
 
         except Exception as e:
             logger.error(f"Ошибка при получении настроек для telegram_id={telegram_id}: {e}")
-            return default_settings.copy()
+            return DEFAULT_SETTINGS.copy()
         finally:
             if conn:
                 conn.close()
 
     def update_settings(self, telegram_id: int, settings: dict):
-        """
-        Полностью перезаписывает settings пользователя в БД.
-        """
         conn = None
         try:
             conn = get_connection()
@@ -144,9 +126,6 @@ class UserRepository:
                 conn.close()
 
     def get_setting(self, telegram_id: int, key: str, default=None):
-        """
-        Возвращает одно конкретное значение настройки.
-        """
         try:
             settings = self.get_settings(telegram_id)
             return settings.get(key, default)
@@ -155,10 +134,6 @@ class UserRepository:
             return default
 
     def set_setting(self, telegram_id: int, key: str, value):
-        """
-        Устанавливает одно конкретное значение настройки
-        и сохраняет его в БД.
-        """
         try:
             settings = self.get_settings(telegram_id)
             settings[key] = value
