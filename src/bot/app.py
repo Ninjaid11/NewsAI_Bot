@@ -11,6 +11,9 @@ from src.services.database.sent_news_repository import SentNewsRepository
 from src.bot.handlers.start import StartHandlers
 from src.bot.handlers.settings import SettingsHandlers
 from src.bot.handlers.news import NewsHandler
+from src.bot.handlers.send_time import SendTimeHandlers
+from src.bot.handlers.language import LanguageHandlers
+from src.bot.handlers.subscription import SubscriptionHandlers
 
 from src.services.llm.llm_service import LLMService
 from src.services.news.mailer import NewsMailer
@@ -34,7 +37,6 @@ class BotApplication:
 
         # Сервисы
         self.llm_service = LLMService()
-        self.news_repo = NewsRepository()
         self.news_mailer = NewsMailer(
             bot=self.bot,
             users=self.user_repo,
@@ -55,10 +57,16 @@ class BotApplication:
             start = StartHandlers(self.user_repo)
             settings = SettingsHandlers(self.user_repo)
             news = NewsHandler(self.user_repo, self.news_repo, self.sent_repo)
+            send_time = SendTimeHandlers(self.user_repo)
+            lang = LanguageHandlers(self.user_repo)
+            subscribe = SubscriptionHandlers(self.user_repo)
 
             self.dp.include_router(start.router)
             self.dp.include_router(settings.router)
             self.dp.include_router(news.router)
+            self.dp.include_router(send_time.router)
+            self.dp.include_router(lang.router)
+            self.dp.include_router(subscribe.router)
         except Exception as e:
             logger.error(f"Ошибка при настройке хэндлеров: {e}")
 
