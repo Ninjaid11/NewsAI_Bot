@@ -72,7 +72,11 @@ class BotApplication:
 
     def setup_tasks(self):
         try:
-            self.scheduler.add_job(self.news_mailer.send_new_news, "interval", hours=1)
+            self.scheduler.add_job(
+                self.news_mailer.send_new_news,
+                "interval",
+                minutes=1
+            )
             self.scheduler.start()
         except Exception as e:
             logger.error(f"Ошибка при настройке scheduler: {e}")

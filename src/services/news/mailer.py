@@ -9,23 +9,16 @@ from src.services.news.news_summarizer import NewsSummarizer
 from src.services.news.send_time_checker import SendTimeChecker
 
 from src.services.llm.llm_service import LLMService
-
 from src.core.log_config import Logger
 
 logger = Logger().get_logger()
 
 class NewsMailer:
-    """Сервис рассылки новостей пользователям с учётом выбранного времени суток."""
+    """Сервис рассылки новостей с учётом времени."""
 
     FALLBACK_IMAGE = "static/images/fallback.jpg"
 
-    def __init__(
-        self,
-        bot,
-        users: UserRepository,
-        news: NewsRepository,
-        sent: SentNewsRepository
-    ):
+    def __init__(self, bot, users: UserRepository, news: NewsRepository, sent: SentNewsRepository):
         self.bot = bot
         self.users = users
         self.news = news
@@ -36,25 +29,25 @@ class NewsMailer:
         self.processor = NewsProcessor(summarizer, news)
 
     async def send_new_news(self):
-        """Отправляет новые новости пользователям, если сейчас подходящее время."""
         try:
-            subscribed_users = self.users.get_subscribed_users()
+            user_ids = self.users.get_subscribed_users()
         except Exception as e:
-            logger.error(f"Ошибка получения подписанных пользователей: {e}")
+            logger.error(f"Ошибка получения пользователей: {e}")
             return
 
-        for user_id in subscribed_users:
+        for user_id in user_ids:
             try:
                 settings = self.users.get_settings(user_id)
                 send_times = settings.get("send_times", ["morning"])
                 lang = settings.get("lang", "en")
 
-                if not SendTimeChecker.should_send_now(send_times):
+                if not SendTimeChecker.should_send_now(send_times, use_utc=False):
                     continue
 
                 news_list = self.news.get_latest(20)
+
             except Exception as e:
-                logger.error(f"Ошибка получения настроек или новостей для user_id={user_id}: {e}")
+                logger.error(f"Ошибка настроек user_id={user_id}: {e}")
                 continue
 
             for item in news_list:
@@ -71,25 +64,24 @@ class NewsMailer:
                     )
 
                     keyboard = None
-                    url = processed.get("source_url")
-                    if url and url.startswith("http"):
+                    if processed.get("source_url"):
                         keyboard = InlineKeyboardMarkup(
-                            inline_keyboard=[[InlineKeyboardButton(text="Перейти к статье", url=url)]]
+                            inline_keyboard=[
+                                [InlineKeyboardButton(text="Перейти к статье", url=processed["source_url"])]
+                            ]
                         )
-
-                    image_url = processed.get("image_url") or self.FALLBACK_IMAGE
 
                     await self.bot.send_photo(
                         chat_id=user_id,
-                        photo=image_url,
+                        photo=processed.get("image_url") or self.FALLBACK_IMAGE,
                         caption=text,
                         parse_mode="HTML",
                         reply_markup=keyboard
                     )
 
                     self.sent.mark_sent(user_id, item["id"])
+                    logger.info(f"Новость отправлена user_id={user_id}, news_id={item['id']}")
                     break
 
                 except Exception as e:
-                    logger.error(f"Ошибка при отправке новости id={item['id']} user_id={user_id}: {e}")
-                    continue
+                    logger.error(f"Ошибка отправки news_id={item['id']} user_id={user_id}: {e}")
