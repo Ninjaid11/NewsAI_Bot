@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    container_name: news_ai_bot
+    volumes:
+      - ./news_ai.db:/app/news_ai.db
+      - ./logs:/app/logs
+    restart: unless-stopped
+    env_file:
+      - .env
