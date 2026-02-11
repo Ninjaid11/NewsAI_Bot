@@ -41,7 +41,7 @@ class NewsMailer:
                 send_times = settings.get("send_times", ["morning"])
                 lang = settings.get("lang", "en")
 
-                if not SendTimeChecker.should_send_now(send_times, use_utc=False):
+                if not SendTimeChecker.should_send_now(send_times):
                     continue
 
                 news_list = self.news.get_latest(20)

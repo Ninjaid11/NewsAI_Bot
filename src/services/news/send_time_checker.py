@@ -1,7 +1,8 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 class SendTimeChecker:
-    """Проверяет, нужно ли слать новость сейчас."""
+    """Проверяет, нужно ли слать новость прямо сейчас по Киеву."""
 
     TIME_MAP = {
         "morning": 8,
@@ -10,14 +11,12 @@ class SendTimeChecker:
     }
 
     @staticmethod
-    def should_send_now(send_times: list[str], use_utc=True) -> bool:
-        """
-        send_times — ['morning', 'evening']
-        """
-        now = datetime.utcnow() if use_utc else datetime.now()
+    def should_send_now(send_times: list[str]) -> bool:
+        """send_times — список ['morning', 'evening', ...]"""
+        now = datetime.now(ZoneInfo("Europe/Kyiv"))
 
-        # ⛔ отправляем ТОЛЬКО в начале часа
-        if now.minute != 0:
+        # Отправляем только в начале часа (минуты 0 или 1)
+        if now.minute > 1:
             return False
 
         for period in send_times:
