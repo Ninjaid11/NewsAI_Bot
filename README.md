@@ -36,7 +36,7 @@ Telegram-бот для обработки новостей.
 ### 1️⃣ Клонировать репозиторий
 
 ```bash
-git clone https://github.com/yourusername/NewsAI_Bot.git
+git clone https://github.com/Ninjaid11/NewsAI_Bot.git
 cd NewsAI_Bot
 ```
 
