@@ -50,7 +50,7 @@ GEMINI_API_KEY=your_api_key
 ### 3️⃣ Запустить
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 После запуска бот начнёт работать автоматически.
