@@ -43,8 +43,8 @@ cd NewsAI_Bot
 ### 2️⃣ Создать `.env`
 
 ```env
-TELEGRAM_TOKEN=your_telegram_token
-GEMINI_API_KEY=your_api_key
+BOT_TOKEN=your_telegram_token
+API_KEY=your_api_key
 ```
 
 ### 3️⃣ Запустить
