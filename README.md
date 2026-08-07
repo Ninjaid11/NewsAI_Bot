@@ -1,58 +1,83 @@
-# 📰 NewsAI_Bot
+# 📰 NewsAI Bot
 
-Telegram-бот для обработки новостей.
+Telegram bot for news processing and distribution.
 
-Бот получает новости через RSS-ленты, сохраняет их в базу данных, генерирует краткое summary с помощью LLM и отправляет пользователям в удобном формате.
+The bot retrieves news through RSS feeds, stores articles in a database, generates concise summaries using LLM (Large Language Model), and sends formatted content to users.
 
-Проект создан как учебная backend-практика с использованием Docker и работы с внешними API.
-
----
-
-## 🚀 Возможности
-
-* 📡 Получение новостей через RSS
-* 📩 Подписка и отписка пользователей
-* 🌍 Поддержка нескольких языков
-* 🧠 Генерация краткого summary через LLM
-* 🗄 Сохранение новостей в базу данных
-* 🐳 Запуск в Docker
+Built as a backend development project using Docker and integration with external APIs.
 
 ---
 
-## ⚙️ Технологии
+## Features
 
-Проект использует:
-
-* **Python 3.11** — основной язык разработки
-* **aiogram** — создание Telegram-бота
-* **Gemini 2.5 Flash (LLM)** — генерация кратких summary
-* **BeautifulSoup** — обработка и извлечение данных из RSS/HTML
-* **Docker** — контейнеризация и запуск проекта
+* News retrieval through RSS feeds
+* User subscription and unsubscription management
+* Multi-language support (Ukrainian, English)
+* Automatic news summarization using LLM
+* Article storage and persistence in database
+* Scheduled batch delivery via cron runner
+* Full Docker containerization
 
 ---
 
-## 🐳 Запуск проекта
+## ⚙️ Technology Stack
 
-### 1️⃣ Клонировать репозиторий
+* Python 3.11
+* aiogram (Telegram bot framework)
+* Gemini 2.5 Flash (LLM for content summarization)
+* BeautifulSoup (RSS parsing and data extraction)
+* PostgreSQL (article storage)
+* Docker & Docker Compose
+
+---
+
+## 🐳 Installation & Setup
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Ninjaid11/NewsAI_Bot.git
 cd NewsAI_Bot
 ```
 
-### 2️⃣ Создать `.env`
+### 2. Create `.env` Configuration
 
 ```env
-BOT_TOKEN=your_telegram_token
-API_KEY=your_api_key
+BOT_TOKEN=your_telegram_bot_token
+GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=postgresql://user:password@db:5432/newsai_db
 ```
 
-### 3️⃣ Запустить
+### 3. Run with Docker
 
 ```bash
 docker compose up -d --build
 ```
 
-После запуска бот начнёт работать автоматически.
+The bot will start automatically and begin processing RSS feeds.
+
+---
+
+## How It Works
+
+1. **RSS Feed Monitoring**: Bot periodically checks configured RSS feeds for new articles
+2. **Article Storage**: New articles are stored in PostgreSQL database
+3. **Summarization**: Content is processed through Gemini 2.5 Flash API to generate concise summaries
+4. **Batch Delivery**: Scheduled cron runner sends collected articles to subscribed users at configured intervals
+5. **Multi-language Support**: Users can choose content language (Ukrainian or English)
+
+---
+
+## Project Purpose
+
+This project demonstrates:
+
+* Telegram bot development with event-driven architecture
+* Integration with external LLM APIs
+* RSS feed parsing and processing
+* Scheduled task management with cron
+* Database design for content management
+* Docker containerization best practices
+* Building scalable bot infrastructure
 
 ---
